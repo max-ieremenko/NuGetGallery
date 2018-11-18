@@ -701,10 +701,16 @@ namespace NuGetGallery
                 .As<IReportService>()
                 .SingleInstance();
 
-            builder.RegisterInstance(NullStatisticsService.Instance)
+            // enable statistics
+            builder.RegisterType<JsonStatisticsService>()
                 .AsSelf()
                 .As<IStatisticsService>()
                 .SingleInstance();
+
+            ////builder.RegisterInstance(NullStatisticsService.Instance)
+            ////    .AsSelf()
+            ////    .As<IStatisticsService>()
+            ////    .SingleInstance();
 
             // If we're not using azure storage, then aggregate stats comes from SQL
             builder.RegisterType<SqlAggregateStatsService>()
