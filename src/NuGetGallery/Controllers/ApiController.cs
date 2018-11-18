@@ -34,7 +34,7 @@ namespace NuGetGallery
     public partial class ApiController
         : AppController
     {
-        private const string NuGetExeUrl = "https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe";
+        private const string NuGetExeUrl = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
 
         public IApiScopeEvaluator ApiScopeEvaluator { get; set; }
         public IEntitiesContext EntitiesContext { get; set; }
@@ -596,8 +596,10 @@ namespace NuGetGallery
                                     }
                                     else
                                     {
+                                        // HttpStatusCode.Conflict
+                                        // ignore package re-publishing
                                         return new HttpStatusCodeWithBodyResult(
-                                            HttpStatusCode.Conflict,
+                                            HttpStatusCode.Created,
                                             string.Format(CultureInfo.CurrentCulture, Strings.PackageExistsAndCannotBeModified,
                                                 id, version.ToNormalizedStringSafe()));
                                     }

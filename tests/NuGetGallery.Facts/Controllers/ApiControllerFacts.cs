@@ -2529,7 +2529,7 @@ namespace NuGetGallery
                 // Assert
                 var redirect = Assert.IsType<RedirectResult>(result);
                 Assert.False(redirect.Permanent, "The redirect should not be permanent");
-                Assert.Equal("https://dist.nuget.org/win-x86-commandline/v2.8.6/nuget.exe", redirect.Url);
+                Assert.Equal("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe", redirect.Url);
             }
         }
 
