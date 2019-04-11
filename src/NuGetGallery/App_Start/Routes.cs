@@ -702,6 +702,12 @@ namespace NuGetGallery
                 constraints: new { httpMethod = new HttpMethodConstraint("DELETE") });
 
             routes.MapRoute(
+                "v2HardDeletePackageApi",
+                "api/v2/HardDeletePackageApi",
+                new { controller = "Api", action = "HardDeletePackageApi" },
+                constraints: new { httpMethod = new HttpMethodConstraint("POST") });
+
+            routes.MapRoute(
                 "v2" + RouteName.PublishPackageApi,
                 "api/v2/package/{id}/{version}",
                 new { controller = "Api", action = "PublishPackageApi" },

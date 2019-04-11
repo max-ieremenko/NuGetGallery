@@ -24,6 +24,7 @@ using NuGetGallery.Auditing.AuditedEntities;
 using NuGetGallery.Authentication;
 using NuGetGallery.Configuration;
 using NuGetGallery.Filters;
+using NuGetGallery.Helpers;
 using NuGetGallery.Infrastructure.Authentication;
 using NuGetGallery.Packaging;
 using NuGetGallery.Security;
@@ -105,6 +106,7 @@ namespace NuGetGallery
             SecurityPolicyService = securityPolicies;
             ReservedNamespaceService = reservedNamespaceService;
             PackageUploadService = packageUploadService;
+            PackageDeleteService = packageDeleteService;
             StatisticsService = null;
             SymbolPackageFileService = symbolPackageFileService;
             SymbolPackageUploadService = symbolPackageUploadService;
@@ -777,6 +779,55 @@ namespace NuGetGallery
             return new HttpStatusCodeWithBodyResult(
                 HttpStatusCode.BadRequest,
                 string.Format(CultureInfo.CurrentCulture, Strings.UploadPackage_InvalidPackage, ex.Message));
+        }
+
+        [HttpPost]
+        [ApiAuthorize]
+        [ApiScopeRequired(NuGetScopes.PackageUnlist)]
+        [ActionName("HardDeletePackageApi")]
+        public async Task<ActionResult> HardDeletePackages(DeletePackagesRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var packagesToDelete = new List<Package>();
+
+            // Get the packages to delete
+            foreach (var package in request.Packages)
+            {
+                var split = package.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                if (split.Length == 2)
+                {
+                    var packageToDelete = PackageService.FindPackageByIdAndVersionStrict(split[0], split[1]);
+                    if (packageToDelete != null)
+                    {
+                        packagesToDelete.Add(packageToDelete);
+                    }
+                }
+            }
+
+            // Perform delete
+            if (request.SoftDelete)
+            {
+                await PackageDeleteService.SoftDeletePackagesAsync(
+                    packagesToDelete,
+                    GetCurrentUser(),
+                    EnumHelper.GetDescription(request.Reason.Value),
+                    request.Signature);
+            }
+            else
+            {
+                await PackageDeleteService.HardDeletePackagesAsync(
+                    packagesToDelete,
+                    GetCurrentUser(),
+                    EnumHelper.GetDescription(request.Reason.Value),
+                    request.Signature,
+                    request.DeleteEmptyPackageRegistration);
+            }
+
+            return new EmptyResult();
         }
 
         [HttpDelete]
